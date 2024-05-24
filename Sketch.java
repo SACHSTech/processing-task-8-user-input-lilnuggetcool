@@ -1,59 +1,163 @@
 import processing.core.PApplet;
 
-public class Sketch extends PApplet {
-  
-  // Define colors
-  int backgroundColor;
-  int rectColor;
-  int ellipseColor;
+/**
+* A that makes a dodging game.
+* @author: L.Lam
+*
+*/
 
-  /**
-   * Called once at the beginning of execution, put your size all in this method
-   */
+public class Sketch extends PApplet {
+
+  float[] fltSnowX = new float[42];
+  float[] fltSnowY = new float[42];
+  int[] intSnowDiameter = new int[42];
+  float fltSpeed = 6;
+  float fltPlayerX, fltPlayerY;
+  int intPlayerSize = 20;
+  int intLives = 3;
+
   public void settings() {
-    // Set the size of the window
     size(400, 400);
   }
 
-  /** 
-   * Called once at the beginning of execution. Add initial set up
-   * values here i.e background, stroke, fill etc.
-   */
+    /**
+  * background and random snow genrator
+  * 
+  */
+
+  
   public void setup() {
-    // Initialize colors
-    backgroundColor = color(210, 255, 173);
-    rectColor = color(100, 150, 200);
-    ellipseColor = color(255, 100, 150);
-    
-    // Set the background color
-    background(backgroundColor);
+    background(0);
+
+    fltPlayerX = width / 2;
+    fltPlayerY = height - 50;
+
+    for (int i = 0; i < fltSnowX.length; i++ ) {
+      fltSnowX[i] = random(width);
+      fltSnowY[i] = random(-height, 0); 
+      intSnowDiameter[i] = 20;
+    }
   }
 
-  /**
-   * Called repeatedly, anything drawn to the screen goes here
-   */
+   /**
+  * Draws snowballs, player circle and intLives squares
+  * 
+  */
+  
   public void draw() {
-    // Clear the background
-    background(backgroundColor);
-
-    // Draw a rectangle in the center of the canvas
-    fill(rectColor);
-    rectMode(CENTER);
-    rect(width / 2, height / 2, 150, 100);
-
-    // Draw an ellipse that follows the mouse
-    fill(ellipseColor);
-    noStroke();
-    ellipse(mouseX, mouseY, 50, 50);
+    background(0);
+    snow();
+    player();
+    drawintLives();
   }
 
-  /**
-   * Called when mouse is pressed
-   */
+   /**
+  * generates snowballs, fall Speed
+  * 
+  */
+
+  public void snow() {
+    for (int i = 0; i < fltSnowX.length; i++) {
+      if (fltSnowX[i] != -1 && fltSnowY[i] != -1) {
+
+        // Draw snowballs
+        noStroke();
+        fill(255); 
+        ellipse(fltSnowX[i], fltSnowY[i], intSnowDiameter[i], intSnowDiameter[1]);
+
+        fltSnowY[i] += fltSpeed;
+        if (fltSnowY[i] > height){
+          fltSnowY[i] = random(-height, 0); 
+          fltSnowX[i] = random(width); // Randomize x position
+          intSnowDiameter[i] = 20;
+        }
+
+        // Check collision with player
+        if (dist(fltSnowX[i], fltSnowY[i], fltPlayerX, fltPlayerY) < intSnowDiameter[i] / 2 + intPlayerSize / 2) {
+          intSnowDiameter[i] = 0;
+          intLives--; 
+          fltSnowY[i] = random(-height, 0);
+          fltSnowX[i] = random(width); // Randomize x position
+         
+        }
+      }
+    }
+
+    // Check for game over
+    if (intLives <= 0) {
+      background(255); 
+      textSize(32);
+      fill(0);
+      textAlign(CENTER, CENTER);
+      text("Game Over", width / 2, height / 2);
+      noLoop();
+    }
+  }
+
+    /**
+  * Draws player circle 
+  * 
+  */
+
+  public void player() {
+
+    // Draw player
+    fill(0, 0, 255); 
+    ellipse(fltPlayerX, fltPlayerY, intPlayerSize, intPlayerSize);
+  }
+
+     /**
+  * Draws and generate intLives square 
+  * 
+  */
+
+  public void drawintLives() {
+
+    // Draw live squares
+    fill(255, 0, 100); 
+    for (int i = 0; i < intLives; i++) {
+      rect(width - 30 - i * 30, 10, 20, 20); 
+    }
+  }
+
+    /**
+  * make it so that circle dissapears after clicked 
+  * 
+  */
+
   public void mousePressed() {
-    // Change the background color randomly on mouse press
-    backgroundColor = color(random(255), random(255), random(255));
+
+    // Move the snowflake off-screen when circle is clicked
+    for (int i = 0; i < fltSnowX.length; i++) {
+      if (dist(mouseX, mouseY, fltSnowX[i], fltSnowY[i]) < intSnowDiameter[i] / 2) {
+        intSnowDiameter[i] =0; 
+      }
+    }
   }
 
-  // Define other methods down here if needed
+
+    /**
+  * Control Keys 
+  * 
+  */
+  
+  public void keyPressed() {
+
+    // Controlls
+    if (key == 'a') {
+      fltPlayerX -= 10;
+    } else if (key == 'd') {
+      fltPlayerX += 10;
+    } else if (key == 'w') {
+      fltPlayerY -= 10;
+    } else if (key == 's') {
+      fltPlayerY += 10;
+    } else if (key == '3') {
+      fltSpeed = 15;
+    } else if (key == '1') {
+      fltSpeed = 2;
+    } else if (key == '2') {
+      fltSpeed = 6;
+    }
+  }
 }
